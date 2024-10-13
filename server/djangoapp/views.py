@@ -1,53 +1,37 @@
-# Uncomment the required imports before adding the code
-
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth import logout
-from django.contrib import messages
+from django.contrib.auth import login, authenticate, logout
+from .models import CarMake, CarModel
 from datetime import datetime
-
-from django.http import JsonResponse
-from django.contrib.auth import login, authenticate
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
-# from .populate import initiate
-
+from .populate import initiate  # Uncomment and ensure initiate function is imported correctly
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-
 # Create your views here.
 
-# Create a `login_request` view to handle sign in request
 @csrf_exempt
 def login_user(request):
-    # Get username and password from request.POST dictionary
     data = json.loads(request.body)
     username = data['userName']
     password = data['password']
-    # Try to check if provided credentials can be authenticated
     user = authenticate(username=username, password=password)
     data = {"userName": username}
     if user is not None:
-        # If user is valid, call login method to log in the current user
         login(request, user)
         data = {"userName": username, "status": "Authenticated"}
     return JsonResponse(data)
 
-
 @csrf_exempt
 def logout_request(request):
-    # Perform the logout operation
     logout(request)
-    # Return a JSON response indicating the user has logged out
     data = {"userName": "", "status": "Logged out"}
     return JsonResponse(data)
-
-
 
 @csrf_exempt
 def registration(request):
@@ -59,40 +43,45 @@ def registration(request):
     last_name = data['lastName']
     email = data['email']
     username_exist = False
-    email_exist = False
+
     try:
-        # Check if user already exists
         User.objects.get(username=username)
         username_exist = True
-    except:
-        # If not, simply log this is a new user
-        logger.debug("{} is new user".format(username))
-    # If it is a new user
+    except User.DoesNotExist:
+        logger.debug("{} is a new user".format(username))
+
     if not username_exist:
-        # Create user in auth_user table
-        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name,password=password, email=email)
-        # Login the user and redirect to list page
+        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, password=password, email=email)
         login(request, user)
-        data = {"userName":username,"status":"Authenticated"}
+        data = {"userName": username, "status": "Authenticated"}
         return JsonResponse(data)
-    else :
-        data = {"userName":username,"error":"Already Registered"}
+    else:
+        data = {"userName": username, "error": "Already Registered"}
         return JsonResponse(data)
 
-        
-# # Update the `get_dealerships` view to render the index page with
-# a list of dealerships
-# def get_dealerships(request):
-# ...
+@csrf_exempt
+def get_cars(request):
+    # Check if there are any car makes or models in the database
+    count = CarMake.objects.filter().count()
+    if count == 0:
+        print("Database is empty, initiating population...")
+        initiate()  # Populate the database if empty
 
-# Create a `get_dealer_reviews` view to render the reviews of a dealer
-# def get_dealer_reviews(request,dealer_id):
-# ...
+    # Fetch all car models and their makes
+    car_models = CarModel.objects.select_related('car_make')
+    cars = []
+    for car_model in car_models:
+        car_data = {
+            "CarModel": car_model.name,
+            "CarMake": car_model.car_make.name,
+            "Year": car_model.year
+        }
+        # Add debugging print statement
+        print(f"Fetched CarModel: {car_data}")
+        cars.append(car_data)
 
-# Create a `get_dealer_details` view to render the dealer details
-# def get_dealer_details(request, dealer_id):
-# ...
+    # If the list is empty, print a message
+    if not cars:
+        print("No car data found in the database.")
 
-# Create a `add_review` view to submit a review
-# def add_review(request):
-# ...
+    return JsonResponse({"CarModels": cars})
