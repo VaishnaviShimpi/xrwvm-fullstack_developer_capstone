@@ -1,0 +1,68 @@
+<!-- Contact.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - AutoDealer</title>
+    <!-- Link to style sheets -->
+    <link rel="stylesheet" href="{% static 'contact.css' %}">
+</head>
+<body>
+    <!-- Header navigation bar -->
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/inventory/">Inventory</a></li>
+                <li><a href="/services/">Services</a></li>
+                <li><a href="/contact/" class="active">Contact Us</a></li>
+                <li><a href="/about/">About Us</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- Main content for Contact Us -->
+    <main>
+        <div class="contact-container">
+            <h1>Contact Us</h1>
+            <p>At AutoDealer, we're here to help you with all your automotive needs. Whether you're looking for a new car, need service, or have any questions, feel free to reach out to us using the information below or by filling out our contact form.</p>
+            
+            <div class="contact-info">
+                <h2>Our Contact Information</h2>
+                <p><strong>Email:</strong> sales@autodealer.com</p>
+                <p><strong>Phone:</strong> +1 (800) 555-1234 (Mon-Sat, 9 AM - 8 PM)</p>
+                <p><strong>Service Center:</strong> +1 (800) 555-5678 (Mon-Fri, 8 AM - 6 PM)</p>
+                <p><strong>Address:</strong> 4567 Auto Lane, Car City, Motor State 67890</p>
+            </div>
+            
+            <div class="contact-form">
+                <h2>Get in Touch</h2>
+                <form action="/send-message/" method="post">
+                    {% csrf_token %}
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" required>
+                    
+                    <label for="email">Your Email:</label>
+                    <input type="email" id="email" name="email" required>
+                    
+                    <label for="message">Your Message:</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                    
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 AutoDealer. All rights reserved.</p>
+        <p>Follow us on: 
+            <a href="https://facebook.com/autodealer">Facebook</a> | 
+            <a href="https://twitter.com/autodealer">Twitter</a> | 
+            <a href="https://instagram.com/autodealer">Instagram</a>
+        </p>
+    </footer>
+</body>
+</html>
